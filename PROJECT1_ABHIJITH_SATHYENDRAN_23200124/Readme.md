@@ -1,0 +1,2 @@
+For each task a directory has been created. To see the results of each task, do cd {exercisename}.
+A readme is created for each exercise. The commands in the readme can be executed in the mentioned order to see results.

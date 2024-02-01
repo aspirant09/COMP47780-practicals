@@ -1,0 +1,90 @@
+version: '3'
+networks:
+  rabbitmq_go_net:
+    driver: bridge
+services:
+  rabbitmq:
+    image: "rabbitmq:3.13-rc-management"
+    container_name: rabbitmq_container
+    ports:
+      - "5672:5672"  # AMQP
+      - "15672:15672"  # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest  
+    networks:
+      - rabbitmq_go_net
+  
+  student:
+    image: python:3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: sh -c "sleep 10 && python -u /usr/src/app/student.py 2>&1"
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq_go_net
+    tty: true
+    #restart: unless-stopped
+    volumes:
+      - ./student.py:/usr/src/app/student.py
+  demonstrator_cc:
+    image: python:3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: sh -c "sleep 5 && python -u /usr/src/app/demonstrator_cc.py 2>&1"
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq_go_net
+    tty: true
+    volumes:
+      - ./demonstrator_cc.py:/usr/src/app/demonstrator_cc.py
+  demonstrator_dm:
+    image: python:3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: sh -c "sleep 5 && python -u /usr/src/app/demonstrator_dm.py 2>&1"
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq_go_net
+    tty: true
+    volumes:
+      - ./demonstrator_dm.py:/usr/src/app/demonstrator_dm.py
+  ta:
+    image: python:3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: sh -c "sleep 5 && python -u /usr/src/app/teaching_assistant.py 2>&1"
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq_go_net
+    tty: true
+    volumes:
+      - ./teaching_assistant.py:/usr/src/app/teaching_assistant.py
+  module_coordinator:
+    image: python:3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: sh -c "sleep 5 && python -u /usr/src/app/module_coordinator.py 2>&1"
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq_go_net
+    tty: true
+    volumes:
+      - ./module_coordinator.py:/usr/src/app/module_coordinator.py
+  
